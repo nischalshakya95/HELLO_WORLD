@@ -1,0 +1,32 @@
+version: 2
+general:
+  branches:
+    only:
+      - master
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - setup_remote_docker:
+          version: 20.10.14
+      - checkout
+      - run:
+          name: Deploy
+          command: |
+            sudo apt update -y
+            sudo apt install awscli -y
+
+            echo Start deploy for ALB
+
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o2e6u6n6
+            docker build -t public.ecr.aws/o2e6u6n6/nischal:success .
+            docker push public.ecr.aws/o2e6u6n6/nischal:success
+            aws ecs update-service --cluster nischal-cluster --service nischal-react-app-service --force-new-deployment
+             
+            echo Deploy end
+workflows:
+  version: 2
+  deploy_ec2:
+    jobs:
+      - build
