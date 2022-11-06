@@ -17,12 +17,13 @@ jobs:
             sudo apt update -y
             sudo apt install awscli -y
 
-            echo Start deploy for ALB
+            echo CloudFront
 
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o2e6u6n6
-            docker build -t public.ecr.aws/o2e6u6n6/nischal:success .
-            docker push public.ecr.aws/o2e6u6n6/nischal:success
-            aws ecs update-service --cluster nischal-cluster --service nischal-react-app-service --force-new-deployment
+            curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+            sudo apt-get install nodejs
+            npm i
+            npm run build
+            aws s3 sync build s3://nischal-s3-bucket
              
             echo Deploy end
 workflows:
